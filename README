@@ -1,1 +1,15 @@
-Application for solving and generating unsolved Sudoku puzzles
+Application for solving and generating unsolved Sudoku puzzles.
+
+You can submit Sudoku puzzles to the application to be solved. You 
+can also ask the application to generate unsolved puzzles for 
+you to solve. You can tell the application to generate a puzzle 
+of a certain difficulty level (Easy, Medium, Hard).
+
+The application also if so desired generate a pass by pass 
+development of a solution for you, showing cells as they
+are filled in every pass. This is intended to assist you in
+solving a puzzle.
+
+Lastly the application also intends to offer you hints as to
+the possible candidate(s) for a cell. Though this part remains
+to be coded as yet.
