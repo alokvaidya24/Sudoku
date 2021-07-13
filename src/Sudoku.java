@@ -1,10 +1,44 @@
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This [roject aims to be a helper in generating and solving
  * Sudoku puzzles
+ *
+ * A Sudoku puzzle has 9 boxes arranged as a 3x3 matrix.
+ * Each box is itself a 3x3 matrix of 9 cells.
+ *
+ * We number the boxes and cells thus:
+ * Numbers inside puzzle refer to each box
+ * and those on the perimeter of the puzzle refer to
+ * cells.
+ *
+ * Ex.: the 1st Box at the top-left corner is
+ * Box #0, the box on its right is Box #1 and so on.
+ *
+ * Similarly the cell in the top-left corner is
+ * written as [0,0] the one to its immediate right
+ * is [0,1] and so on.
+ *
+ *      0   1   2    3   4   5    6   7   8
+ *   ||===|===|===||===|===|===||===|===|===||
+ * 0 ||   |   |   ||   |   |   ||   |   |   ||
+ *   ||---|---|---||---|---|---||---|---|---||
+ * 1 ||   | 0 |   ||   | 1 |   ||   | 2 |   ||
+ *   ||---|---|---||---|---|---||---|---|---||
+ * 2 ||   |   |   ||   |   |   ||   |   |   ||
+ *   ||===|===|===||===|===|===||===|===|===||
+ * 3 ||   |   |   ||   |   |   ||   |   |   ||
+ *   ||---|---|---||---|---|---||---|---|---||
+ * 4 ||   | 3 |   ||   | 4 |   ||   | 5 |   ||
+ *   ||---|---|---||---|---|---||---|---|---||
+ * 5 ||   |   |   ||   |   |   ||   |   |   ||
+ *   ||===|===|===||===|===|===||===|===|===||
+ * 6 ||   |   |   ||   |   |   ||   |   |   ||
+ *   ||---|---|---||---|---|---||---|---|---||
+ * 7 ||   | 6 |   ||   | 7 |   ||   | 8 |   ||
+ *   ||---|---|---||---|---|---||---|---|---||
+ * 8 ||   |   |   ||   |   |   ||   |   |   ||
+ *   ||===|===|===||===|===|===||===|===|===||
  *
  * Author: Alok Vaidya
  * Date: 08/07/21
@@ -14,7 +48,7 @@ public class Sudoku {
 
     enum difficulty {EASY,MED,HARD}
 
-    private Sudoku(){
+    Sudoku(){
         puzzle = new Cell [9][9];
 
         //for (int i=0;i<9;i++)
@@ -22,14 +56,14 @@ public class Sudoku {
 
     public static void main(String [] args){
         Sudoku sudoku = new Sudoku();
-
+        HashMap <Integer,Cell> numbersToAssign;
         /*
         Ask the user for Sudoku values
          */
         //displayMenu();
 
-        // Static puzzle for testing
-        int [] row1 = {0,0,4,0,0,5,0,0,0};
+        // Static puzzle for testing 19th June 2021 "The Hindu"
+        /*int [] row1 = {0,0,4,0,0,5,0,0,0};
         int [] row2 = {0,1,0,0,0,4,0,5,0};
         int [] row3 = {6,5,0,0,0,3,0,0,7};
         int [] row4 = {0,0,0,7,0,0,5,4,0};
@@ -38,6 +72,19 @@ public class Sudoku {
         int [] row7 = {8,0,0,3,0,0,0,7,6};
         int [] row8 = {0,4,0,6,0,0,0,9,0};
         int [] row9 = {0,0,0,9,0,0,3,0,0};
+        */
+
+        // Static puzzle for testing 20th June 2021 "The Hindu"
+        int [] row1 = {1,0,0,0,0,0,0,0,0};
+        int [] row2 = {0,0,0,0,0,1,6,2,0};
+        int [] row3 = {9,0,4,0,2,5,0,0,1};
+        int [] row4 = {0,7,0,2,0,0,0,6,0};
+        int [] row5 = {2,0,0,7,0,8,0,0,4};
+        int [] row6 = {0,4,0,0,0,9,0,7,0};
+        int [] row7 = {7,0,0,4,1,0,9,0,8};
+        int [] row8 = {0,2,1,6,0,0,0,0,0};
+        int [] row9 = {0,0,0,0,0,0,0,0,6};
+        
 
         sudoku.puzzleRow(0,row1);
         sudoku.puzzleRow(1,row2);
@@ -49,29 +96,62 @@ public class Sudoku {
         sudoku.puzzleRow(7,row8);
         sudoku.puzzleRow(8,row9);
 
-        sudoku.displayPuzzle();
 
         /*
-        we update the candidate values for each cell
-        as per the preset puzzle entered
+        start solving the puzzle pass by pass
          */
-        sudoku.updateCandidates();
+        int pass = 0;
+        int cells_filled_in_pass;
+        do {
+            cells_filled_in_pass = 0;
+            System.out.println("Pass: "+ ++pass);
+            System.out.println("No. of Empty Cells: "+ sudoku.getNoOfEmptyCells());
+            sudoku.displayPuzzle();
 
-        /*
-        Check if any cells have only one candidate value.
-        All cells having only a single candidate value are
-        assigned that value.
-         */
-        for (int i=0;i<9;i++){
-            for (int j=0;j<9;j++){
-                if (sudoku.puzzle[i][j].getCandidates().size()==1)
-                    sudoku.puzzle[i][j].setValue(
-                            sudoku.puzzle[i][j].getCandidates().getFirst());
+            /*
+            we update the candidate values for each cell
+            as per the preset puzzle entered
+            */
+            sudoku.updateCandidates();
+
+            /*
+            Check if any cells have only one candidate value.
+            All cells having only a single candidate value are
+            assigned that value.
+            */
+            for (int i = 0; i < 9; i++) {
+                for (int j = 0; j < 9; j++) {
+                    if (sudoku.puzzle[i][j].getCandidates()!=null) {
+                        if (sudoku.puzzle[i][j].getCandidates().size() == 1){
+                            sudoku.puzzle[i][j].setValue(
+                                    sudoku.puzzle[i][j].getCandidates().remove());
+                            sudoku.puzzle[i][j].getCandidates().clear();
+                            cells_filled_in_pass++;
+                        }
+                    }
+                }
             }
+            
+            sudoku.updateCandidates();
 
-        }
+            for (int i=0;i<9;i++){
+                numbersToAssign = sudoku.getBoxNumbersToAssign(i);
+                for (Integer number : numbersToAssign.keySet()) {
+                    Cell cell = numbersToAssign.get(number);
+                    //sudoku.puzzle[cell.getRow()][cell.getCol()].setValue(number);
+                    cell.setValue(number);
+                    cell.getCandidates().clear();
+                    cells_filled_in_pass++;
+                }
+            }
+            /*
 
+             */
+            System.out.println("Cells Filled: "+ cells_filled_in_pass);
+        }  while (sudoku.getNoOfEmptyCells()!=0 && cells_filled_in_pass>=1);
 
+        System.out.println("============= Final Solution ============");
+        sudoku.displayPuzzle();
     }
 
     /*
@@ -81,7 +161,7 @@ public class Sudoku {
     row [] - contains the values either (1-9) or zero (0)
     if blank for all columns within that row.
      */
-    private void puzzleRow(int rowNo, int [] row){
+    public void puzzleRow(int rowNo, int [] row){
         for (int i=0;i<9;i++){
             Cell cell = new Cell(rowNo, i, row[i]);
             puzzle [rowNo][i] = cell; // assign the newly created cell to the puzzle
@@ -115,7 +195,7 @@ public class Sudoku {
         System.out.println("\n||===|===|===||===|===|===||===|===|===||");
     }
 
-    private void updateCandidates(){
+    public void updateCandidates(){
         for (int i=0;i<9;i++){
             for (int j=0;j<9;j++){
                 /*
@@ -123,13 +203,15 @@ public class Sudoku {
                   - make a list of all candidates to be removed
                   - update the cell by removing such candidates
                  */
-                puzzle[i][j].removeCandidates(computeCellCandidates(i,j));
+                if (puzzle[i][j].getValue()==0)
+                    puzzle[i][j].removeCandidates
+                            (computeCellCandidates(i,j));
 
             }
         }
     }
 
-    private ArrayDeque<Integer> computeCellCandidates(int row, int col){
+    public ArrayDeque<Integer> computeCellCandidates(int row, int col){
         ArrayDeque<Integer> removeList = new ArrayDeque<>();
         for (int i=0;i<9;i++) {
             if (i!=col) {
@@ -175,7 +257,7 @@ public class Sudoku {
 
         for (int i=start_row;i<(start_row+3);i++) {
             for (int j = start_col; j < (start_col + 3); j++) {
-                if (i != row && j != col) { // explicitly avoiding current cell
+                if (! (i==row && j==col)) { // explicitly avoiding current cell
                     if (puzzle[i][j].getValue() != 0) // 0 means cell is blank
                         removeList.add(puzzle[i][j].getValue());
                 }
@@ -183,6 +265,100 @@ public class Sudoku {
         }
 
         return removeList;
+    }
+
+    /*
+       Given a Cell, returns the box number
+       it falls in.
+
+       Please refer class Sudoku for Box and Cell numbering
+     */
+    public int getBoxNo(Cell cell){
+        return (((cell.getRow()/3)*3) + cell.getCol()/3);
+    }
+    
+    /*
+      Given a box number this method returns the number candidates
+      and the corresponding cells to assign the numbers to as a map
+     */
+    public HashMap<Integer,Cell> getBoxNumbersToAssign(int box){
+        int start_row=(box/3)*3;
+        int start_col=(box%3)*3;
+        return getUniqueCellCandidateInBox(start_row,start_col);
+    }
+
+    /**
+     * This method checks whether for any number(1-9) there exists
+     * only one possible cell as a candidate.
+     *
+     * The cell chosen may still have multiple candidates, but since
+     * some number has only that cell as an option, it should be
+     * assigned to that cell.
+     * @param start_row - starting row position for the box
+     * @param start_col - starting col position for the box
+     * @return a map of numbers with the corresponding Cell to which
+     * they must be assigned
+     *
+     * null - if there is an error
+     */
+    public HashMap<Integer,Cell> getUniqueCellCandidateInBox(int start_row, int start_col){
+        HashMap<Integer,Cell> numbersToAssign = new HashMap<Integer,Cell>();
+        HashSet<Integer> filterList = new HashSet<>();
+        ArrayDeque<Integer> candidates;
+        if (start_row%3!=0 || start_col%3!=0)
+            /*
+            positions represented by start_row and start_col
+            are not the start positions for a box.
+             */
+            return null;
+        else{
+            for (int i=start_row;i<start_row+3;i++) {
+                for (int j = start_col; j < start_col + 3; j++) {
+                    candidates = puzzle[i][j].getCandidates();
+                    if (candidates!=null) {
+                        for (Integer candidate : candidates) {
+                            if (numbersToAssign.containsKey(candidate)) {
+                            /*
+                            candidate number is already present in the
+                            numbersToAssign map, which means it has multiple
+                            cells as possible spots. Put this number in a filter
+                            list that we will use to finally filter the original
+                            list.
+
+                            If we do not take this measure than a number appearing
+                            as candidate in 3 or 5 or 7 cells will end up in the
+                            original list as it will be added on the first encounter
+                            removed on the second and again added on the third.
+                            Ending up in the orignal list, even though it shouldn't
+                            as it has multiple cell spots as options.
+                             */
+                                if (!filterList.contains(candidate))
+                                    filterList.add(candidate);
+                            } else {
+                            /*
+                            This number is not present in the ToAssign map
+                            we will insert it into the map assuming this
+                            is the only cell it can be assigned to.
+                            */
+                                numbersToAssign.put(candidate, puzzle[i][j]);
+                            }
+                        }
+                    }
+                }
+            }
+
+            /*
+            filter original list with the filterList
+             */
+            Iterator<Integer> iter = filterList.iterator();
+            while (iter.hasNext())
+                numbersToAssign.remove(iter.next());
+        }
+        /*
+        the map shall now only contain numbers with only a single cell
+        as the option.
+         */
+        return numbersToAssign;
     }
 
     /*
@@ -249,6 +425,7 @@ class Cell{
 
     void setValue(int val){
         this.value = val;
+        this.candidates.clear();
     }
 
     ArrayDeque<Integer> getCandidates(){
@@ -268,6 +445,7 @@ class Cell{
         Since we are initializing this cell as blank, it should have
         all digits 1-9 as possible candidates
          */
+        candidates = new ArrayDeque<>();
         for (int i=1;i<=9;i++)
             candidates.add(i);
     }
@@ -287,8 +465,14 @@ class Cell{
         this.row = row;
         this.col = col;
         this.value = value;
-        if (value!=0){
-            candidates = null;
+        if (value==0){
+           /*
+            Since we are initializing this cell as blank, it should have
+            all digits 1-9 as possible candidates
+           */
+           candidates = new ArrayDeque<Integer>();
+           for (int i=1;i<=9;i++)
+                candidates.add(i);
         }
     }
 
